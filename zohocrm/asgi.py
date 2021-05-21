@@ -6,16 +6,6 @@
 
 # application = get_asgi_application()
 
-# import os
-# import django
-
-# from channels.routing import get_default_application
-
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-# django.setup()
-# application = get_default_application()
-
-
 import os
 
 from channels.auth import AuthMiddlewareStack
@@ -34,14 +24,3 @@ application = ProtocolTypeRouter({
         )
     ),
 })
-
-# application = ProtocolTypeRouter(
-#     {
-#         "http": get_asgi_application(),
-#         "websocket": AuthMiddlewareStack(
-#             RouteNotFoundMiddleware(
-#                 URLRouter(chat.routing.websocket_urlpatterns)
-#             )
-#         )
-#     }
-# )

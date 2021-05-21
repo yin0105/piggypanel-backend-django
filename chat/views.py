@@ -13,6 +13,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from . import models, serializers
+from rest_framework.decorators import api_view
+
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -22,7 +24,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        user = self.request.user
+        user = User.objects.filter(id=self.request.GET.get("user_id")).first()
         chat = user.chat_set.all()
         if not chat:
             context['chat'] = 0
@@ -31,8 +33,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
         return context
 
 
+@api_view(['POST'])
 def createChat(request):
     data = request.POST
+    print("== createChat => ", data)
     receiver = User.objects.get(pk=int(data['receiver']))
     sender = User.objects.get(pk=int(data['sender']))
     chat_name = receiver.username + sender.username
@@ -54,12 +58,36 @@ def createChat(request):
     return JsonResponse(data=serializers.ChatSerializer(chat).data)
 
 
-class ChatViewSet(ModelViewSet):
-    queryset = models.Chat.objects.all()
+class ChatViewSet(ModelViewSet):    
     serializer_class = serializers.ChatSerializer
 
-    def get_queryset(self):
-        return self.request.user.chat_set.all().order_by('-pk')
+    # posts = ""
+    # if "name" in request.GET :
+    #     posts = Schedule.objects.filter(name = request.GET["name"])
+    # else:
+    def list(self, request):
+        queryset = models.Chat.objects.all()
+        print("== queryset = ", queryset)
+        serializer = serializers.ChatSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    # def list(self, request):
+    #     queryset = models.Chat.objects.all()
+    #     serializer = serializers.ChatSerializer(queryset, many=True)
+    #     return Response(serializer.data)
+    # def get_queryset(self):
+    #     print("======= new user = ", self.request.user)
+    #     # user = User.objects.filter(id=self.request.GET.get("user_id")).first()
+    #     user = self.request.user
+    #     # return user.chat_set.all().order_by('-pk')
+    #     # return self.request.user.chat_set.all().order_by('-pk')
+
+    #     queryset = self.filter_queryset(self.get_queryset().exclude(username=self.request.user.username))
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
+
+        
         
 
 
@@ -68,15 +96,38 @@ class UserViewSet(ModelViewSet):
     serializer_class = serializers.UserSerializer
 
     def list(self, request, *args, **kwargs):
+        print("=== self.request.user.username = ", self.request.user.username)
         queryset = self.filter_queryset(self.get_queryset().exclude(username=self.request.user.username))
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        # page = self.paginate_queryset(queryset)
+        # if page is not None:
+        #     serializer = self.get_serializer(page, many=True)
+        #     return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    # queryset = User.objects.all()
+    # serializer_class = serializers.UserSerializer
+
+    # def list(self, request, *args, **kwargs):
+    #     print("== UserViewSet : ", self.request.GET.get("user_id"))
+    #     if self.request.GET.get("user_id") == None:
+    #         queryset = self.filter_queryset(self.get_queryset())
+    #     else:    
+    #         user = User.objects.filter(id=self.request.GET.get("user_id")).first()
+    #         queryset = self.filter_queryset(self.get_queryset().exclude(username=user.username))
+
+    #     # page = self.paginate_queryset(queryset)
+    #     # print("== page ", page)
+    #     # if page is not None:
+    #     #     serializer = self.get_serializer(page, many=True)
+    #     #     print("== serializer ", serializer)
+    #     #     self.get_paginated_response(serializer.data)
+    #     #     return self.get_paginated_response(serializer.data)
+
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
 
 
 class UserView(CreateView):

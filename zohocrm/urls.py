@@ -26,8 +26,8 @@ from rest_framework import routers
 from chat import views
 
 router = routers.SimpleRouter()
-router.register(r'chats', views.ChatViewSet)
-router.register(r'users', views.UserViewSet)
+router.register(r'chats', views.ChatViewSet, basename='Chat')
+router.register(r'users', views.UserViewSet, basename='User')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,9 +35,10 @@ urlpatterns = [
     url(r'^rest-auth/authenticate/$', CustomObtainAuthToken.as_view()),
     path('api/leads/', include('leads.urls')),
     path('api/contacts/', include('contacts.urls')),
-    
+    path('create-chat/', views.createChat, name='create'),
     path('', views.IndexView.as_view(), name='home'),
     
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + router.urls
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+

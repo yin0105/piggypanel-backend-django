@@ -71,12 +71,11 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.common.CommonMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'channels.middleware.BaseMiddleware',
     
 ]
 
@@ -103,7 +102,6 @@ REST_FRAMEWORK = {
 CORS_ALLOW_CREDENTIALS = True
 
 # CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
-CORS_ALLOWED_ORIGINS = ["http://localhost:4000"]
 # CORS_ALLOWED_ORIGINS = [
 #     "https://example.com",
 #     "https://sub.example.com",
@@ -157,8 +155,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': config('DB_NAME', default='zohocrm'),
         'USER': config('DB_USER', default='postgres'),
-        # 'PASSWORD': config('DB_PASS', default='dipankar'),
         'PASSWORD': config('DB_PASS', default='postgres'),
+        # 'PASSWORD': config('DB_PASS', default='dipankar'),
         'HOST': config('HOST', default='localhost'),
         'PORT': '5432',
     }
@@ -252,7 +250,9 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-######################
+#################
+CORS_ALLOWED_ORIGINS = ["http://localhost:4000"]
+
 CHANNEL_LAYERS = {
     "default": {
         # This example app uses the Redis channel layer implementation channels_redis
