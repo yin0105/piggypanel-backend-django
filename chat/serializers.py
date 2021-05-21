@@ -24,9 +24,6 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         # representation = super(MessageSerializer, self).to_representation(instance)
-        print("instance = ", instance)
-        print("date_sent = ", instance.date_sent)
-        print("diff_time = ", instance.diff_time)
         if instance.date_sent != None:
             diff = (datetime.utcnow().replace(tzinfo=pytz.UTC) - instance.date_sent).total_seconds()
             if diff < 1:
@@ -43,7 +40,6 @@ class MessageSerializer(serializers.ModelSerializer):
                 instance.diff_time = "{} months ago".format(int(diff // (86400 * 30)))
             else:
                 instance.diff_time = "{} years ago".format(int(diff // (86400 * 365)))
-            print(instance.diff_time)
         representation = super(MessageSerializer, self).to_representation(instance)
         return representation
 
@@ -60,9 +56,6 @@ class MessageSerializerWS(serializers.ModelSerializer):
     @database_sync_to_async
     def to_representation(self, instance):
         # representation = super(MessageSerializer, self).to_representation(instance)
-        print("instance = ", instance)
-        print("date_sent = ", instance.date_sent)
-        print("diff_time = ", instance.diff_time)
         if instance.date_sent != None:
             diff = (datetime.utcnow().replace(tzinfo=pytz.UTC) - instance.date_sent).total_seconds()
             if diff < 1:
@@ -79,7 +72,6 @@ class MessageSerializerWS(serializers.ModelSerializer):
                 instance.diff_time = "{} months ago".format(int(diff // (86400 * 30)))
             else:
                 instance.diff_time = "{} years ago".format(int(diff // (86400 * 365)))
-            print(instance.diff_time)
         representation = super(MessageSerializer, self).to_representation(instance)
         return representation
 

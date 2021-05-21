@@ -182,9 +182,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         command = contents.get("command", None)
         try:
             if command == "join":
-                await self.join_chat(contents["chat"])
+                await self.join_chat(contents["chat"], contents["user"])
             elif command == "leave":
-                await self.leave_chat(contents["chat"])
+                await self.leave_chat(contents["chat"], contents["user"])
             elif command == "send":
                 await self.send_chat(
                     contents["chat"], contents["message"], 
@@ -193,14 +193,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         except ClientError as e:
             await self.send_json({"error": e.code})
 
-    async def join_chat(self, chat_id):
+    async def join_chat(self, chat_id, user):
         print("""
         
         === join_chat
         
         """)
         # The logged-in user is in our scope thanks to the authentication ASGI middleware
-        chat = await get_chat_or_error(chat_id, self.scope["user"])
+        chat = await get_chat_or_error(chat_id, user)
         public_key = await get_public_key(chat)
         # Store that we're in the chat
         self.chats.add(chat_id)
@@ -215,14 +215,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             "key": str(public_key)
         })
 
-    async def leave_chat(self, chat_id):
+    async def leave_chat(self, chat_id, user):
         print("""
         
         === leave_chat
         
         """)
         # The logged-in user is in our scope thanks to the authentication ASGI middleware
-        chat = await get_chat_or_error(chat_id, self.scope["user"])
+        chat = await get_chat_or_error(chat_id, user)
         # Remove that we're in the chat
         self.chats.discard(chat_id)
         # Remove them from the group so they no longer get chat messages
@@ -241,10 +241,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         === send_chat
         
         """)
+        print("chat_id = ", chat_id)
+        print("self.chats = ", self.chats)
         if chat_id not in self.chats:
+            print("chat_ACCESS_DENIED")
             raise ClientError("chat_ACCESS_DENIED")
-
-        chat = await get_chat_or_error(chat_id, self.scope["user"])
+        
+        chat = await get_chat_or_error(chat_id, user)
         print(encrypted_message, file=sys.stderr)
 
         if encryption_type == 'rsa':
@@ -253,7 +256,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             decrypted_message = await aes_decrypted_text(encrypted_message)
 
         print(decrypted_message, file=sys.stderr)
-        message = await create_message(chat.id, self.scope["user"], decrypted_message)
+        message = await create_message(chat.id, user, decrypted_message)
+        MessageSerializerWS(message)
         # print(" == message = ", message.date_sent)
         # message = await database_sync_to_async(MessageSerializerWS(message).data, thread_sensitive=True)
         # message = MessageSerializerWS(message)
@@ -283,7 +287,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         new_message["diff_time"] = message.diff_time
         new_message["text"] = message.text
         new_message["id"] = message.id
-        new_message["sender"] = {"id": 1}
+        new_message["sender"] = {"id": user}
        
         # new_message["id"] = message.chat.id
         

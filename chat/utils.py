@@ -12,6 +12,7 @@ from base64 import b64decode
 
 from .exceptions import ClientError
 from .models import Chat, Message
+from user.models import User
 
 
 @database_sync_to_async
@@ -19,11 +20,13 @@ def get_chat_or_error(chat_id, user):
     """
     Tries to fetch a chat for the user, checking permissions along the way.
     """
-    if not user.is_authenticated:
+    if not User.objects.filter(id=user).first().is_authenticated:
+        print("USER_HAS_TO_LOGIN")
         raise ClientError("USER_HAS_TO_LOGIN")
     try:
         chat = Chat.objects.get(pk=chat_id)
     except Chat.DoesNotExist:
+        print("chat_INVALID")
         raise ClientError("chat_INVALID")
     return chat
 
@@ -32,6 +35,7 @@ def create_message(chat_id, user, message):
     """
     Creates a message object to keep on the db for later chat resume.
     """
+    user = User.objects.filter(id=user).first()
     if not user.is_authenticated:
         raise ClientError("USER_HAS_TO_LOGIN")
     try:
