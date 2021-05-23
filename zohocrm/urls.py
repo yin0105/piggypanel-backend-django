@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/leads/', include('leads.urls')),
     path('api/contacts/', include('contacts.urls')),
     path('create-chat/', views.createChat, name='create'),
+    path('get-messages/', views.getMessages, name='get_messages'),
     path('', views.IndexView.as_view(), name='home'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + router.urls

@@ -15,6 +15,7 @@ from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from datetime import date, datetime
 import pytz
+from .models import Chat
 
 
 from .utils import (
@@ -147,14 +148,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         
         """)
         # self.room_name = self.scope['url_route'\]['kwargs']['room_code']
-        self.room_group_name = 'room_name'
+        self.room_group_name = 'chatting_room'
         print("== group name = ", self.room_group_name)
         self.chats = set()
+        self.receivers = ""
         # self.room_group_name = 'room_%s' % self.room_name
 
         # Join room group
         await self.channel_layer.group_add(
-            self.room_group_name,
+            'chatting_room',
             self.channel_name
         )   
         await self.accept()
@@ -181,17 +183,67 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         print("== contents ", contents)
         command = contents.get("command", None)
         try:
-            if command == "join":
+            if command == "prejoin":
+                await self.prejoin_chat(contents["group"], contents["user"])
+            elif command == "join":
                 await self.join_chat(contents["chat"], contents["user"])
             elif command == "leave":
                 await self.leave_chat(contents["chat"], contents["user"])
             elif command == "send":
+                
+                # await self.append_all(
+                #     contents["chat"], contents['user']
+                # )
                 await self.send_chat(
                     contents["chat"], contents["message"], 
                     contents['user'], contents['type']
                 )
         except ClientError as e:
             await self.send_json({"error": e.code})
+
+    # async def append_all(self, chat_id, user):
+    #     chat = Chat.objects.get(pk=chat_id)
+    #     public_key = await get_public_key(chat)
+    #     # Store that we're in the chat
+    #     self.chats.add(chat_id)
+    #     for u in chat.name.split("_"):
+    #         await self.channel_layer.group_add(
+    #         'chatting_room',
+    #             # chat.group_name,
+    #             self.channel_name,
+    #         )
+    #         await self.send_json({
+    #             "join": str(chat.id),
+    #             "key": str(public_key)
+    #         })
+            
+
+    async def prejoin_chat(self, group, user):
+        print(" == prejoin")
+        # chat = await get_chat_or_error(chat_id, user)
+        # public_key = await get_public_key(chat)
+        # # Store that we're in the chat
+        # self.chats.add(chat_id)
+        # Add them to the group so they get chat messages
+        # await self.channel_layer.group_add(
+        #     "-{}-".format(group),
+        #     self.channel_name,
+        # )
+        # await self.channel_layer.group_add(
+        #     str(user),
+        #     self.channel_name,
+        # )
+
+        
+        await self.channel_layer.group_add(
+            'chatting_room',
+            self.channel_name
+        )
+
+        await self.send_json({
+            "prejoin": ".",
+        })
+
 
     async def join_chat(self, chat_id, user):
         print("""
@@ -203,10 +255,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         chat = await get_chat_or_error(chat_id, user)
         public_key = await get_public_key(chat)
         # Store that we're in the chat
-        self.chats.add(chat_id)
+        self.chats.add(chat_id)        
         # Add them to the group so they get chat messages
         await self.channel_layer.group_add(
-            chat.group_name,
+            'chatting_room',
+            # chat.group_name,
+            # self.room_group_name,
             self.channel_name,
         )
         # Instruct their client to finish opening the chat
@@ -290,23 +344,25 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         new_message["sender"] = {"id": user}
        
         # new_message["id"] = message.chat.id
-        
+        print("group name = ", chat.group_name)
+        self.receivers = chat.receivers
         await self.channel_layer.group_send(
-            chat.group_name,
+            "chatting_room",
             {
                 "type": "chat.message",
                 "chat_id": chat_id,
                 "username": self.scope["user"].username,
                 "message": new_message,
+                "receiver": self.receivers,
             }
         )
 
     async def chat_join(self, event):
         print("""
         
-        === chat_join
+        === chat_join :: {}
         
-        """)
+        """.format(event["username"]))
         await self.send_json(
             {
                 "chat": event["chat_id"],
@@ -330,14 +386,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def chat_message(self, event):
         print("""
         
-        === chat_message
+        === chat_message :: 
         
-        """)
+        """, event["username"], " : ", self.scope["user"])
         await self.send_json(
             {
                 "chat": event["chat_id"],
                 "username": event["username"],
                 "message": event["message"],
+                "receiver": event["receiver"],                
             },
         )
 
@@ -359,17 +416,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         #     }
         # )
 
-    async def send_message(self, res):
-        print("""
+    # async def send_message(self, res):
+    #     print("""
         
-        === send message
+    #     === send message
         
-        """)
-        """ Receive message from room group """
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            "payload": res,
-        }))
+    #     """)
+    #     """ Receive message from room group """
+    #     # Send message to WebSocket
+    #     await self.send(text_data=json.dumps({
+    #         "payload": res,
+    #     }))
 
     # async def chat_message(self, event):
     #     message = event['message']
