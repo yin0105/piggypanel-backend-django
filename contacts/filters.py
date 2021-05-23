@@ -21,9 +21,7 @@ class CustomFilterSet(filters.FilterSet):
         # print(self.request.query_params)
         for param in self.request.query_params:
             if param.find('data__') != -1:
-                print(param)
                 val = self.request.query_params[param]
-                # print(val)
                 queryset = queryset.filter(**{param:val})
 
         if('allocated_to' in self.request.query_params):

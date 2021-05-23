@@ -58,7 +58,6 @@ class MessageSerializerWS(serializers.ModelSerializer):
     def to_representation(self, instance):
         # representation = super(MessageSerializer, self).to_representation(instance)
         receivers = instance.chat.receivers
-        print("== receivers = ", receivers)
         if instance.date_sent != None:
             diff = (datetime.utcnow().replace(tzinfo=pytz.UTC) - instance.date_sent).total_seconds()
             if diff < 1:

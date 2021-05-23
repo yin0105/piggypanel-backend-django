@@ -33,7 +33,6 @@ class ContactsSerializer(serializers.ModelSerializer):
         return_data = {}
         return_data = obj.data
         for field in fields:
-            print(field['field_data'])
             if field['field_data'] is not None:
                 for (key,data) in field['field_data'].items():
                     if(data == obj.data[field['field_api_name']]):

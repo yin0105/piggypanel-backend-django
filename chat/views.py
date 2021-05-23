@@ -37,6 +37,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
 @api_view(['POST'])
 def createChat(request):
+    data = request.GET
     data = request.POST
     sender = User.objects.get(pk=int(data['sender']))
     chat_name = "_{}_{}_".format(sender.id, data['receiver'])
@@ -46,36 +47,43 @@ def createChat(request):
     if not chat:
         chat = models.Chat.objects.create(name=chat_name)
         chat.save()
-        chat.users.add(sender)
-        chat.receivers = "_{}_".format(sender.id)
-
-        if data['receiver'].find("@") > -1 :
-            group_name = data['receiver'][1:]
-            receivers = User.objects.get(Q(group=group_name) & Q(id!=int(data['sender'])))
-            for receiver in receivers:
-                print("== receiver id: ", receiver.id)
-                chat.users.add(receiver)
-                chat.receivers += str(receiver.id) + "_"
-            chat.save()        
-        else:
-            receiver = User.objects.get(pk=int(data['receiver']))
-            chat.users.add(receiver)
-            chat.receivers += str(receiver.id) + "_"
-            chat.save()
-
-            chat_clone = serializers.ChatSerializer(chat).data.copy()
-            messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
-            chat_clone["messages"] = messages
-            return JsonResponse(data=chat_clone)
     else:
         chat = chat[0]
+        chat.users.set([])
 
-        if data['receiver'].find("@") == -1 :
-            receiver = User.objects.get(pk=int(data['receiver']))
-            chat_clone = serializers.ChatSerializer(chat).data.copy()
-            messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
-            chat_clone["messages"] = messages
-            return JsonResponse(data=chat_clone)
+    chat.users.add(sender) 
+    chat.receivers = "_{}_".format(sender.id)
+
+    if data['receiver'].find("@") > -1 :
+        group_name = data['receiver'][1:]
+        if group_name.lower() == "admin":
+            receivers = User.objects.filter(Q(is_superuser=True) , ~Q(id=int(data['sender']))) 
+        else:
+            # receivers = User.objects.filter(~Q(id=int(data['sender'])))
+            receivers = User.objects.filter(Q(groups__name__iexact=group_name) , ~Q(id=int(data['sender'])))
+        
+        for receiver in receivers:
+            chat.users.add(receiver)
+            chat.receivers += str(receiver.id) + "_"
+        chat.save()        
+    else:
+        receiver = User.objects.get(pk=int(data['receiver']))
+        chat.users.add(receiver)
+        chat.receivers += str(receiver.id) + "_"
+        chat.save()
+
+        chat_clone = serializers.ChatSerializer(chat).data.copy()
+        messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
+        chat_clone["messages"] = messages
+        return JsonResponse(data=chat_clone)
+    
+
+        # if data['receiver'].find("@") == -1 :
+        #     receiver = User.objects.get(pk=int(data['receiver']))
+        #     chat_clone = serializers.ChatSerializer(chat).data.copy()
+        #     messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
+        #     chat_clone["messages"] = messages
+        #     return JsonResponse(data=chat_clone)
     
     # if not chat.users.all():
     #     chat.users.add(receiver, sender)
@@ -139,7 +147,6 @@ class UserViewSet(ModelViewSet):
     serializer_class = serializers.UserSerializer
 
     def list(self, request, *args, **kwargs):
-        print("=== self.request.user.username = ", self.request.user.username)
         queryset = self.filter_queryset(self.get_queryset().exclude(username=self.request.user.username))
 
         # if page is not None:
