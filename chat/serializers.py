@@ -138,6 +138,13 @@ class ChatSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    unread = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
         fields = '__all__'
+
+    def get_unread(self, obj):
+        return 0
+
+    
