@@ -35,4 +35,15 @@ class Message(models.Model):
     diff_time = models.TextField(blank=True, null=True)
     chat = models.ForeignKey(Chat, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    # receiver = models.TextField(blank=True, null=True)
+
+
+class Unread(models.Model):    
+    sender = models.IntegerField()
+    receiver = models.IntegerField()
+    unread = models.IntegerField(default=0)
+
+
+class UserStatus(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    status = models.TextField()
+    date_sent = models.DateTimeField(auto_now_add=True)

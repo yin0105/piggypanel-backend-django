@@ -11,7 +11,7 @@ from Crypto.PublicKey import RSA
 from base64 import b64decode
 
 from .exceptions import ClientError
-from .models import Chat, Message
+from .models import Chat, Message, Unread, UserStatus
 from user.models import User
 
 
@@ -45,17 +45,22 @@ def create_message(chat_id, user, message):
     message = Message.objects.create(chat=chat, text=message, sender=user)
     return message
 
-# @database_sync_to_async
-# def get_receivers(chat_id):
-#     try:
-#         chat = Chat.objects.get(pk=chat_id)
-#     except Chat.DoesNotExist:
-#         raise ClientError("chat_INVALID")
+@database_sync_to_async
+def add_unread(chat_id, user):
+    try:
+        chat = Chat.objects.get(pk=chat_id)
+    except Chat.DoesNotExist:
+        raise ClientError("chat_INVALID")
 
-#     all_receivers = "_"
-#     for receiver in chat.users.all():
-#         all_receivers += str(receiver.id) + "_"
-#     return all_receivers
+    for receiver in chat.receivers.split("_")[1:-1]:
+        print(" receiver : ", receiver)
+        if receiver == user : continue
+        unread = Unread.objects.filter(sender=user, receiver=receiver).first()
+        if not unread:
+            unread = Unread.objects.create(sender=user, receiver=receiver)
+        unread.unread += 1
+        unread.save()
+    return
 
 def to_string(bytes):
     return bytes.decode("utf-8")

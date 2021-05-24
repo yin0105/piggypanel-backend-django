@@ -20,7 +20,7 @@ from .models import Chat
 
 from .utils import (
     get_chat_or_error, create_message, get_public_key,
-    rsa_decrypted_text, aes_decrypted_text
+    rsa_decrypted_text, aes_decrypted_text, add_unread
 )
 
 
@@ -142,17 +142,14 @@ from .utils import (
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        print("""
+        # print("""
         
-        === connect
+        # === connect
         
-        """)
-        # self.room_name = self.scope['url_route'\]['kwargs']['room_code']
+        # """)
         self.room_group_name = 'chatting_room'
-        print("== group name = ", self.room_group_name)
         self.chats = set()
         self.receivers = ""
-        # self.room_group_name = 'room_%s' % self.room_name
 
         # Join room group
         await self.channel_layer.group_add(
@@ -162,11 +159,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        print("""
+        # print("""
         
-        === disconnect
+        # === disconnect
         
-        """)
+        # """)
         # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -174,26 +171,26 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-        print("""
+        # print("""
         
-        === receive
+        # === receive
         
-        """)
+        # """)
         contents = json.loads(text_data)
         print("== contents ", contents)
         command = contents.get("command", None)
         try:
             if command == "prejoin":
                 await self.prejoin_chat(contents["group"], contents["user"])
+
             elif command == "join":
                 await self.join_chat(contents["chat"], contents["user"])
+
             elif command == "leave":
                 await self.leave_chat(contents["chat"], contents["user"])
+
             elif command == "send":
-                
-                # await self.append_all(
-                #     contents["chat"], contents['user']
-                # )
+                await add_unread(contents["chat"], contents["user"])
                 await self.send_chat(
                     contents["chat"], contents["message"], 
                     contents['user'], contents['type']
@@ -302,14 +299,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             raise ClientError("chat_ACCESS_DENIED")
         
         chat = await get_chat_or_error(chat_id, user)
-        print(encrypted_message, file=sys.stderr)
+        # print(encrypted_message, file=sys.stderr)
 
         if encryption_type == 'rsa':
             decrypted_message = await rsa_decrypted_text(chat, encrypted_message)
         else:
             decrypted_message = await aes_decrypted_text(encrypted_message)
 
-        print(decrypted_message, file=sys.stderr)
+        # print(decrypted_message, file=sys.stderr)
         message = await create_message(chat.id, user, decrypted_message)
         MessageSerializerWS(message)
         # print(" == message = ", message.date_sent)

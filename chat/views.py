@@ -37,7 +37,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
 @api_view(['POST'])
 def createChat(request):
-    data = request.GET
+    # data = request.GET
     data = request.POST
     sender = User.objects.get(pk=int(data['sender']))
     chat_name = "_{}_{}_".format(sender.id, data['receiver'])
@@ -71,6 +71,9 @@ def createChat(request):
         chat.users.add(receiver)
         chat.receivers += str(receiver.id) + "_"
         chat.save()
+        print('sender=', receiver.id, 'receiver=', sender.id)
+
+        models.Unread.objects.filter(sender=receiver.id, receiver=sender.id).update(unread=0)
 
         chat_clone = serializers.ChatSerializer(chat).data.copy()
         messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
@@ -97,16 +100,25 @@ def getMessages(request):
     data = request.GET
     sender = int(data['sender'])
     receiver = int(data['receiver'])
-    # messages = core.serializers.serialize("json", models.Message.objects.filter(sender_id__in=[sender, receiver]).order_by('date_sent'))
-    # return JsonResponse({"data": messages})
-    # models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver)) & Q(chat__receivers__contains="_{}_".format(sender))) | Q(Q(chat__receivers__startswith="_{}_".format(sender)) & Q(chat__receivers__contains="_{}_".format(receiver))) )
-
     messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver)) & Q(chat__receivers__contains="_{}_".format(sender))) | Q(Q(chat__receivers__startswith="_{}_".format(sender)) & Q(chat__receivers__contains="_{}_".format(receiver))) ).order_by('date_sent')]
 
     return JsonResponse(data={"messages": messages})
 
-    return HttpResponse(messages)
 
+def getUnread(request):
+    data = request.GET
+    sender = int(data['sender'])
+    receiver = int(data['receiver'])
+    if sender > -1:
+        models.Unread.objects.filter(sender=sender, receiver=receiver).update(unread=0)
+    unread_list = []
+    unreads = models.Unread.objects.filter(receiver=receiver)
+    for row in unreads:
+        unread_list.append({"user": row.sender, "unread": row.unread})
+
+    return JsonResponse(data={"data": unread_list})
+
+    
 
 class ChatViewSet(ModelViewSet):    
     serializer_class = serializers.ChatSerializer
