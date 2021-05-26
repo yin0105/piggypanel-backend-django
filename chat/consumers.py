@@ -159,11 +159,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # print("""
+        print("""
         
-        # === disconnect
+        === custom disconnect
         
-        # """)
+        """)
         # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -198,49 +198,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         except ClientError as e:
             await self.send_json({"error": e.code})
 
-    # async def append_all(self, chat_id, user):
-    #     chat = Chat.objects.get(pk=chat_id)
-    #     public_key = await get_public_key(chat)
-    #     # Store that we're in the chat
-    #     self.chats.add(chat_id)
-    #     for u in chat.name.split("_"):
-    #         await self.channel_layer.group_add(
-    #         'chatting_room',
-    #             # chat.group_name,
-    #             self.channel_name,
-    #         )
-    #         await self.send_json({
-    #             "join": str(chat.id),
-    #             "key": str(public_key)
-    #         })
-            
-
-    async def prejoin_chat(self, group, user):
-        print(" == prejoin")
-        # chat = await get_chat_or_error(chat_id, user)
-        # public_key = await get_public_key(chat)
-        # # Store that we're in the chat
-        # self.chats.add(chat_id)
-        # Add them to the group so they get chat messages
-        # await self.channel_layer.group_add(
-        #     "-{}-".format(group),
-        #     self.channel_name,
-        # )
-        # await self.channel_layer.group_add(
-        #     str(user),
-        #     self.channel_name,
-        # )
-
-        
-        await self.channel_layer.group_add(
-            'chatting_room',
-            self.channel_name
-        )
-
-        await self.send_json({
-            "prejoin": ".",
-        })
-
 
     async def join_chat(self, chat_id, user):
         print("""
@@ -271,7 +228,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         
         === leave_chat
         
-        """)
+        """, chat_id, user)
         # The logged-in user is in our scope thanks to the authentication ASGI middleware
         chat = await get_chat_or_error(chat_id, user)
         # Remove that we're in the chat

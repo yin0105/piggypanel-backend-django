@@ -139,6 +139,8 @@ class ChatSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     unread = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    transmissible = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -146,5 +148,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_unread(self, obj):
         return 0
+
+    def get_status(self, obj):
+        return "off"
+
+    def get_transmissible(self, obj):
+        return False
 
     

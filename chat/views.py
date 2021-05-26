@@ -16,6 +16,12 @@ from rest_framework.viewsets import ModelViewSet
 from . import models, serializers
 from rest_framework.decorators import api_view
 from django import core
+from datetime import datetime
+import pytz
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import Group
+from django.forms.models import model_to_dict
+from collections import OrderedDict
 
 
 
@@ -107,51 +113,46 @@ def getMessages(request):
 
 def getUnread(request):
     data = request.GET
-    sender = int(data['sender'])
+    
     receiver = int(data['receiver'])
-    if sender > -1:
+
+    if data['sender'].find("@") == -1:
+        sender = int(data['sender'])    
+
+        user_status, created = models.UserStatus.objects.update_or_create(
+            user=receiver,
+            defaults={'date_sent': datetime.now()},
+        )
+        if user_status.status == 'off':
+            user_status.status = 'on'
+        user_status.save()
+
+    # if sender > -1:
         models.Unread.objects.filter(sender=sender, receiver=receiver).update(unread=0)
+    
     unread_list = []
     unreads = models.Unread.objects.filter(receiver=receiver)
     for row in unreads:
         unread_list.append({"user": row.sender, "unread": row.unread})
 
-    return JsonResponse(data={"data": unread_list})
+    user_status_list = []
+    user_statuses = models.UserStatus.objects.all()
+    for row in user_statuses:
+        if (datetime.utcnow().replace(tzinfo=pytz.UTC) - row.date_sent).total_seconds() > 300:
+            row.status = 'off'
+            row.save()
+        user_status_list.append({"user": row.user, "status": row.status})
 
+    return JsonResponse(data={"unread": unread_list, "user_status": user_status_list})
     
 
 class ChatViewSet(ModelViewSet):    
     serializer_class = serializers.ChatSerializer
 
-    # posts = ""
-    # if "name" in request.GET :
-    #     posts = Schedule.objects.filter(name = request.GET["name"])
-    # else:
-    # def get_queryset(self):
-    #     queryset = models.Chat.objects.all()
-    #     print("== queryset = ", queryset)
-    #     serializer = serializers.ChatSerializer(queryset, many=True)
-
-    #     return Response(serializer.data)
-
     def list(self, request):
         queryset = models.Chat.objects.filter(name__contains="_{}_".format(self.request.user.id))
-        # queryset = models.Chat.objects.all()
         serializer = serializers.ChatSerializer(queryset, many=True)
         return Response(serializer.data)
-    # def get_queryset(self):
-    #     print("======= new user = ", self.request.user)
-    #     # user = User.objects.filter(id=self.request.GET.get("user_id")).first()
-    #     user = self.request.user
-    #     # return user.chat_set.all().order_by('-pk')
-    #     # return self.request.user.chat_set.all().order_by('-pk')
-
-    #     queryset = self.filter_queryset(self.get_queryset().exclude(username=self.request.user.username))
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data)
-
-        
-        
 
 
 class UserViewSet(ModelViewSet):
@@ -159,36 +160,51 @@ class UserViewSet(ModelViewSet):
     serializer_class = serializers.UserSerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset().exclude(username=self.request.user.username))
+        print("== request: ", request.GET)
+        user = User.objects.get(id=request.GET.get("user"))
+        user_group = user.groups.values_list()[0]
+        
+        # Get Receiver Group (Sender Group including user)
+        queryset = models.GroupMessagePermission.objects.select_related("sender_group").filter(Q(sender_group_id=user_group[0]), Q(enabled=True))
+        receiver_group_list = [row.receiver_group_id for row in queryset]
 
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
-
+        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=receiver_group_list), ~Q(id=user.id))
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        receiver_user_list = serializer.data
 
-    # queryset = User.objects.all()
-    # serializer_class = serializers.UserSerializer
+        for row in receiver_user_list:
+            row["transmissible"] = True
 
-    # def list(self, request, *args, **kwargs):
-    #     print("== UserViewSet : ", self.request.GET.get("user_id"))
-    #     if self.request.GET.get("user_id") == None:
-    #         queryset = self.filter_queryset(self.get_queryset())
-    #     else:    
-    #         user = User.objects.filter(id=self.request.GET.get("user_id")).first()
-    #         queryset = self.filter_queryset(self.get_queryset().exclude(username=user.username))
+        # Get Sender Group (Receiver Group including user)
+        queryset = models.GroupMessagePermission.objects.select_related("receiver_group").filter(Q(receiver_group_id=user_group[0]), Q(enabled=True))
+        sender_group_list = [row.sender_group_id for row in queryset if not row.sender_group_id in receiver_group_list]
+        
+        print("== sender list = ", sender_group_list)
+        print("== receiver_group_list = ", receiver_group_list)
 
-    #     # page = self.paginate_queryset(queryset)
-    #     # print("== page ", page)
-    #     # if page is not None:
-    #     #     serializer = self.get_serializer(page, many=True)
-    #     #     print("== serializer ", serializer)
-    #     #     self.get_paginated_response(serializer.data)
-    #     #     return self.get_paginated_response(serializer.data)
+        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=sender_group_list), ~Q(id=user.id))
+        serializer = self.get_serializer(queryset, many=True)
+        sender_user_list = serializer.data
 
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data)
+        queryset = Group.objects.filter(id__in=receiver_group_list)
+        
+        data = []
+        for row in queryset:
+            group_name = "@" + row.name
+            data.append(OrderedDict([("id", group_name), ("username", group_name), ("last_login", ""), ("unread", 0), ("status", "on"), ("transmissible", True)]))
+        
+        for row in receiver_user_list:
+            data.append(row)
+        for row in sender_user_list:
+            data.append(row)
+        print("data = ", data)
+
+        # chat_clone = serializers.ChatSerializer(chat).data.copy()
+        # messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
+        # chat_clone["messages"] = messages
+        # return JsonResponse(data=chat_clone)
+
+        return Response(data)
 
 
 class UserView(CreateView):
