@@ -20,7 +20,7 @@ from .models import Chat
 
 from .utils import (
     get_chat_or_error, create_message, get_public_key,
-    rsa_decrypted_text, aes_decrypted_text, add_unread
+    rsa_decrypted_text, aes_decrypted_text, add_unread, set_user_status,
 )
 
 
@@ -195,6 +195,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     contents["chat"], contents["message"], 
                     contents['user'], contents['type']
                 )
+
+            elif command == "client_status":
+                await self.set_client_status(contents["user"], contents["status"])
+
         except ClientError as e:
             await self.send_json({"error": e.code})
 
@@ -266,12 +270,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # print(decrypted_message, file=sys.stderr)
         message = await create_message(chat.id, user, decrypted_message)
         MessageSerializerWS(message)
-        # print(" == message = ", message.date_sent)
-        # message = await database_sync_to_async(MessageSerializerWS(message).data, thread_sensitive=True)
-        # message = MessageSerializerWS(message)
-        # message = await message
-        # # message = await MessageSerializer(message).data
-        # print(message)
 
         if message.date_sent != None:
             diff = (datetime.utcnow().replace(tzinfo=pytz.UTC) - message.date_sent).total_seconds()
@@ -311,12 +309,20 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
         )
 
+    async def set_client_status(self, user, status):
+        await set_user_status(user, status)
+        await self.channel_layer.group_send(
+            "chatting_room",
+            {
+                "type": "chat.status",
+                "user": user,
+                "user_status": status,
+            }
+        )
+
+
+
     async def chat_join(self, event):
-        print("""
-        
-        === chat_join :: {}
-        
-        """.format(event["username"]))
         await self.send_json(
             {
                 "chat": event["chat_id"],
@@ -325,11 +331,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def chat_leave(self, event):
-        print("""
-        
-        === chat_leave
-        
-        """)
         await self.send_json(
             {
                 "chat": event["chat_id"],
@@ -349,6 +350,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "username": event["username"],
                 "message": event["message"],
                 "receiver": event["receiver"],                
+            },
+        )
+
+    async def chat_status(self, event):
+        await self.send_json(
+            {
+                "user": event["user"],
+                "user_status": event["user_status"],
             },
         )
 

@@ -13,6 +13,7 @@ from base64 import b64decode
 from .exceptions import ClientError
 from .models import Chat, Message, Unread, UserStatus
 from user.models import User
+from datetime import datetime
 
 
 @database_sync_to_async
@@ -60,6 +61,15 @@ def add_unread(chat_id, user):
             unread = Unread.objects.create(sender=user, receiver=receiver)
         unread.unread += 1
         unread.save()
+    return
+
+
+@database_sync_to_async
+def set_user_status(user, status):
+    UserStatus.objects.update_or_create(
+        user=user,
+        defaults={'status': status, 'date_sent': datetime.now()},
+    )
     return
 
 def to_string(bytes):
