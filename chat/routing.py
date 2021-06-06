@@ -37,6 +37,6 @@ from django.conf.urls import url
 from . import consumers
 
 websocket_urlpatterns = [
-    path('chat/stream/', consumers.ChatConsumer.as_asgi()),
+    path('ws/chat/stream/', consumers.ChatConsumer.as_asgi()),
     # url(r'^ws/chat/(?P<room_name>[^/]+)/$', consumers.ChatConsumer),
 ]
