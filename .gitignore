@@ -59,4 +59,4 @@ target/
 
 **/migrations/
 
-chat/perms/
+chat/perms/*
