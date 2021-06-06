@@ -1,7 +1,10 @@
 /*
     DJANGO Admin styles
 */
-
+.topnav .navbar-nav .dropdown-item.active, .topnav .navbar-nav .dropdown-item:hover {
+    color: #f765a4 !important;
+    background-color: transparent;
+}
 @import url(fonts.css);
 
 html, body {
