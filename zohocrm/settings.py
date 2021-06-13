@@ -251,8 +251,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 #################
-CORS_ALLOWED_ORIGINS = ["http://localhost:4000"]
-
+CORS_ALLOWED_ORIGINS = ["http://localhost:4000", "https://demo.piggypanel.com:8000", "https://aegis.piggypanel.com:8001", "https://chilli.piggypanel.com:8002", "https://tcn.piggypanel.com:8003", "https://viking.piggypanel.com:8004"]
 CHANNEL_LAYERS = {
     "default": {
         # This example app uses the Redis channel layer implementation channels_redis
