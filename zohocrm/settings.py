@@ -100,6 +100,7 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 # CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
 # CORS_ALLOWED_ORIGINS = [
@@ -251,7 +252,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 #################
-CORS_ALLOWED_ORIGINS = ["http://localhost:4000", "https://demo.piggypanel.com", "https://aegis.piggypanel.com", "https://chilli.piggypanel.com", "https://tcn.piggypanel.com", "https://viking.piggypanel.com"]
+# CORS_ALLOWED_ORIGINS = ["http://localhost:4000", "https://demo.piggypanel.com", "https://aegis.piggypanel.com", "https://chilli.piggypanel.com", "https://tcn.piggypanel.com", "https://viking.piggypanel.com"]
 CHANNEL_LAYERS = {
     "default": {
         # This example app uses the Redis channel layer implementation channels_redis
