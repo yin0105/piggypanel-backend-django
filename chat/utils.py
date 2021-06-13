@@ -21,13 +21,9 @@ def get_chat_or_error(chat_id, user):
     """
     Tries to fetch a chat for the user, checking permissions along the way.
     """
-    # if not User.objects.filter(id=user).first().is_authenticated:
-    #     print("USER_HAS_TO_LOGIN")
-    #     raise ClientError("USER_HAS_TO_LOGIN")
     try:
         chat = Chat.objects.get(pk=chat_id)
     except Chat.DoesNotExist:
-        print("chat_INVALID")
         raise ClientError("chat_INVALID")
     return chat
 
@@ -43,7 +39,8 @@ def create_message(chat_id, user, message):
         chat = Chat.objects.get(pk=chat_id)
     except Chat.DoesNotExist:
         raise ClientError("chat_INVALID")
-    message = Message.objects.create(chat=chat, text=message, sender=user)
+    message_with_br = "<br/>".join(str(message).splitlines())
+    message = Message.objects.create(chat=chat, text=message_with_br, sender=user)
     return message
 
 @database_sync_to_async
@@ -54,7 +51,6 @@ def add_unread(chat_id, user):
         raise ClientError("chat_INVALID")
 
     for receiver in chat.receivers.split("_")[1:-1]:
-        print(" receiver : ", receiver)
         if receiver == user : continue
         unread = Unread.objects.filter(sender=user, receiver=receiver).first()
         if not unread:
@@ -79,23 +75,14 @@ def to_string(bytes):
 def get_public_key(chat):
     key_pair = RSA.generate(1024) 
     private_key = to_string(key_pair.export_key())
-    print(private_key, file=sys.stderr)
     private = open("{0}/chat/perms/{1}_private.pem".format(settings.BASE_DIR, chat.name), "w+")
     private.write(private_key)
     private.close()
     public_key = to_string(key_pair.publickey().export_key())
-    print(public_key, file=sys.stderr)
     return public_key
 
 @database_sync_to_async
 def rsa_decrypted_text(chat, encrypted_text):
-    # with open("{0}/chat/perms/{1}_private.pem".format(settings.BASE_DIR, chat.name), "r") as private:
-    #     private_key = private.read()
-    #     key = RSA.importKey(private_key)
-    #     cipher = PKCS1_OAEP.new(key, hashAlgo=SHA256)
-    #     decrypted_message = cipher.decrypt(encrypted_text)
-    #     # decrypted_message = cipher.decrypt(b64decode(encrypted_text))
-    # return to_string(decrypted_message)
     return encrypted_text
 
 def _unpad_string(value):

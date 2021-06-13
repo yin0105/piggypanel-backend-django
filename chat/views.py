@@ -3,7 +3,6 @@ import json
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponse
-# from django.contrib.auth.models import User
 from user.models import User
 from django.db.models import Q
 from django.http import JsonResponse
@@ -24,7 +23,6 @@ from django.forms.models import model_to_dict
 from collections import OrderedDict
 
 
-
 class IndexView(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('login')
     redirect_field_name = 'redirect_to'
@@ -43,11 +41,9 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
 @api_view(['POST'])
 def createChat(request):
-    # data = request.GET
     data = request.POST
     sender = User.objects.get(pk=int(data['sender']))
     chat_name = "_{}_{}_".format(sender.id, data['receiver'])
-    # chat_name_flip = "_{}_{}_".format(sender.id, receiver.id)
 
     chat = models.Chat.objects.filter(Q(name=chat_name)) # | Q(name=chat_name_flip)
     if not chat:
@@ -65,7 +61,6 @@ def createChat(request):
         if group_name.lower() == "admin":
             receivers = User.objects.filter(Q(is_superuser=True) , ~Q(id=int(data['sender']))) 
         else:
-            # receivers = User.objects.filter(~Q(id=int(data['sender'])))
             receivers = User.objects.filter(Q(groups__name__iexact=group_name) , ~Q(id=int(data['sender'])))
         
         for receiver in receivers:
@@ -77,7 +72,6 @@ def createChat(request):
         chat.users.add(receiver)
         chat.receivers += str(receiver.id) + "_"
         chat.save()
-        print('sender=', receiver.id, 'receiver=', sender.id)
 
         models.Unread.objects.filter(sender=receiver.id, receiver=sender.id).update(unread=0)
 
@@ -86,22 +80,10 @@ def createChat(request):
         chat_clone["messages"] = messages
         return JsonResponse(data=chat_clone)
     
-
-        # if data['receiver'].find("@") == -1 :
-        #     receiver = User.objects.get(pk=int(data['receiver']))
-        #     chat_clone = serializers.ChatSerializer(chat).data.copy()
-        #     messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
-        #     chat_clone["messages"] = messages
-        #     return JsonResponse(data=chat_clone)
-    
-    # if not chat.users.all():
-    #     chat.users.add(receiver, sender)
-    #     chat.save()
-        
     return JsonResponse(data=serializers.ChatSerializer(chat).data)
 
 
-# @api_view(['POST'])
+@api_view(['POST'])
 def getMessages(request):
     data = request.GET
     sender = int(data['sender'])
@@ -127,7 +109,6 @@ def getUnread(request):
             user_status.status = 'on'
         user_status.save()
 
-    # if sender > -1:
         models.Unread.objects.filter(sender=sender, receiver=receiver).update(unread=0)
     
     unread_list = []
@@ -160,7 +141,6 @@ class UserViewSet(ModelViewSet):
     serializer_class = serializers.UserSerializer
 
     def list(self, request, *args, **kwargs):
-        print("== request: ", request.GET)
         user = User.objects.get(id=request.GET.get("user"))
         user_group = user.groups.values_list()[0]
         
@@ -179,9 +159,6 @@ class UserViewSet(ModelViewSet):
         queryset = models.GroupMessagePermission.objects.select_related("receiver_group").filter(Q(receiver_group_id=user_group[0]), Q(enabled=True))
         sender_group_list = [row.sender_group_id for row in queryset if not row.sender_group_id in receiver_group_list]
         
-        print("== sender list = ", sender_group_list)
-        print("== receiver_group_list = ", receiver_group_list)
-
         queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=sender_group_list), ~Q(id=user.id))
         serializer = self.get_serializer(queryset, many=True)
         sender_user_list = serializer.data
@@ -197,12 +174,6 @@ class UserViewSet(ModelViewSet):
             data.append(row)
         for row in sender_user_list:
             data.append(row)
-        print("data = ", data)
-
-        # chat_clone = serializers.ChatSerializer(chat).data.copy()
-        # messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver.id)) & Q(chat__receivers__contains="_{}_".format(sender.id))) | Q(Q(chat__receivers__startswith="_{}_".format(sender.id)) & Q(chat__receivers__contains="_{}_".format(receiver.id))) ).order_by('date_sent')]
-        # chat_clone["messages"] = messages
-        # return JsonResponse(data=chat_clone)
 
         return Response(data)
 

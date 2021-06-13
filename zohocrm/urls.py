@@ -30,7 +30,7 @@ router.register(r'chats', views.ChatViewSet, basename='Chat')
 router.register(r'users', views.UserViewSet, basename='User')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/admin/', admin.site.urls),
     url(r'^rest-auth/', include('rest_auth.urls')),
     url(r'^rest-auth/authenticate/$', CustomObtainAuthToken.as_view()),
     path('api/leads/', include('leads.urls')),
@@ -43,6 +43,3 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + router.urls
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-print(urlpatterns)
-

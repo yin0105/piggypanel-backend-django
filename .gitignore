@@ -60,3 +60,4 @@ target/
 **/migrations/
 
 chat/perms/*
+__pycache__/
