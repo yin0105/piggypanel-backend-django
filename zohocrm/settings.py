@@ -158,8 +158,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': config('DB_NAME', default='zohocrm'),
         'USER': config('DB_USER', default='postgres'),
-        # 'PASSWORD': config('DB_PASS', default='postgres'),
-        'PASSWORD': config('DB_PASS', default='dipankar'),
+        'PASSWORD': config('DB_PASS', default='postgres'),
+        # 'PASSWORD': config('DB_PASS', default='dipankar'),
         'HOST': config('HOST', default='localhost'),
         'PORT': '5432',
     }

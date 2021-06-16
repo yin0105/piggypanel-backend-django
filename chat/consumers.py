@@ -73,7 +73,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def join_chat(self, chat_id, user):
         # The logged-in user is in our scope thanks to the authentication ASGI middleware
         chat = await get_chat_or_error(chat_id, user)
-        public_key = await get_public_key(chat)
+        # public_key = await get_public_key(chat)
+        public_key = "111"
         # Store that we're in the chat
         self.chats.add(chat_id)        
         # Add them to the group so they get chat messages
