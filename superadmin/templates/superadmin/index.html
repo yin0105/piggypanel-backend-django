@@ -1,0 +1,173 @@
+{% extends "superadmin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form method="POST">{% csrf_token %}
+        <div class="form-group row">
+            <label for="licenses" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">LICENSES</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="licenses" name="licenses" value="{{ LICENSES }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <legend class="col-form-label col-sm-6 pt-0">DEBUG</legend>
+            <div class="col-sm-4 d-flex">
+                <div class="form-check col-sm-6">
+                    <input class="form-check-input" type="radio" name="rdDebug" id="rdDebug1" value="true" checked>
+                    <label class="form-check-label" for="rdDebug1">
+                        True
+                    </label>
+                </div>
+                <div class="form-check col-sm-6">
+                    <input class="form-check-input" type="radio" name="rdDebug" id="rdDebug2" value="false">
+                    <label class="form-check-label" for="rdDebug2">
+                        False
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <legend class="col-form-label col-sm-6 pt-0">TEMPLATE_DEBUG</legend>
+            <div class="col-sm-4 d-flex">
+                <div class="form-check col-sm-6">
+                    <input class="form-check-input" type="radio" name="rdTemplateDebug" id="rdTemplateDebug1" value="true" checked>
+                    <label class="form-check-label" for="rdDebug1">
+                        True
+                    </label>
+                </div>
+                <div class="form-check col-sm-6">
+                    <input class="form-check-input" type="radio" name="rdTemplateDebug" id="rdTemplateDebug2" value="false">
+                    <label class="form-check-label" for="rdDebug2">
+                        False
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="secret_key" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">SECRET_KEY</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="secret_key" name="secret_key" value="{{ SECRET_KEY }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="allowed_hosts" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ALLOWED_HOSTS</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="allowed_hosts" name="allowed_hosts" value="{{ ALLOWED_HOSTS }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="cors_allowed_origins" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">CORS_ALLOWED_ORIGINS</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="cors_allowed_origins" name="cors_allowed_origins" value="{{ CORS_ALLOWED_ORIGINS }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="db_name" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">DB_NAME</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="db_name" name="db_name" value="{{ DB_NAME }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="db_user" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">DB_USER</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="db_user" name="db_user" value="{{ DB_USER }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="db_pass" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">DB_PASS</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="db_pass" name="db_pass" value="{{ DB_PASS }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="host" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">HOST</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="host" name="host" value="{{ HOST }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zoho_current_user_email" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZOHO_CURRENT_USER_EMAIL</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zoho_current_user_email" name="zoho_current_user_email" value="{{ ZOHO_CURRENT_USER_EMAIL }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zoho_client_id" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZOHO_CLIENT_ID</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zoho_client_id" name="zoho_client_id" value="{{ ZOHO_CLIENT_ID }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zoho_client_secret" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZOHO_CLIENT_SECRET</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zoho_client_secret" name="zoho_client_secret" value="{{ ZOHO_CLIENT_SECRET }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zoho_redirect_uri" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZOHO_REDIRECT_URI</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zoho_redirect_uri" name="zoho_redirect_uri" value="{{ ZOHO_REDIRECT_URI }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zcrm_leads_field_map_allocated_to_api_name" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZCRM_LEADS_FIELD_MAP_ALLOCATED_TO_API_NAME</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zcrm_leads_field_map_allocated_to_api_name" name="zcrm_leads_field_map_allocated_to_api_name" value="{{ ZCRM_LEADS_FIELD_MAP_ALLOCATED_TO_API_NAME }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zcrm_contacts_field_map_allocated_to_api_name" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZCRM_CONTACTS_FIELD_MAP_ALLOCATED_TO_API_NAME</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zcrm_contacts_field_map_allocated_to_api_name" name="zcrm_contacts_field_map_allocated_to_api_name" value="{{ ZCRM_CONTACTS_FIELD_MAP_ALLOCATED_TO_API_NAME }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zcrm_leads_field_map_panel_update_date_to_api_name" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZCRM_LEADS_FIELD_MAP_PANEL_UPDATE_DATE_TO_API_NAME</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zcrm_leads_field_map_panel_update_date_to_api_name" name="zcrm_leads_field_map_panel_update_date_to_api_name" value="{{ ZCRM_LEADS_FIELD_MAP_PANEL_UPDATE_DATE_TO_API_NAME }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="zcrm_contacts_field_map_panel_update_date_to_api_name" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">ZCRM_CONTACTS_FIELD_MAP_PANEL_UPDATE_DATE_TO_API_NAME</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="zcrm_contacts_field_map_panel_update_date_to_api_name" name="zcrm_contacts_field_map_panel_update_date_to_api_name" value="{{ ZCRM_CONTACTS_FIELD_MAP_PANEL_UPDATE_DATE_TO_API_NAME }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="cronjobs_log_dir" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">CRONJOBS_LOG_DIR</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="cronjobs_log_dir" name="cronjobs_log_dir" value="{{ CRONJOBS_LOG_DIR }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="crontab_django_project_name" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">CRONTAB_DJANGO_PROJECT_NAME</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="crontab_django_project_name" name="crontab_django_project_name" value="{{ CRONTAB_DJANGO_PROJECT_NAME }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="super_admin_name" class="col-sm-4 col-form-label" style="overflow-wrap: anywhere">SUPER_ADMIN_NAME</label>
+            <div class="col-sm-8">
+            <input type="text" class="form-control" id="super_admin_name" name="super_admin_name" value="{{ SUPER_ADMIN_NAME }}">
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12 justify-content-center d-flex">
+            <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </form>
+</div>
+    
+    {% endblock %}

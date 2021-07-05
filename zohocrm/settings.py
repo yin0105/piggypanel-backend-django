@@ -37,7 +37,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'channels',
     'chat',
     'zohocrm',
+    'superadmin',
 ]
 
 MIDDLEWARE = [
@@ -134,7 +135,7 @@ ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = reverse_lazy('account_confir
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, "zohocrm/templates")],
+        'DIRS': [os.path.join(BASE_DIR, "templates"), os.path.join(BASE_DIR, "zohocrm/templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -146,6 +147,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'zohocrm.wsgi.application'
 

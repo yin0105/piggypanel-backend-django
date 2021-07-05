@@ -1,0 +1,182 @@
+{% load i18n %}
+
+{% if app_list %}
+  <!-- User Administration -->
+  <div class="app-auth module {% if 'authtoken' in request.path or 'auth' in request.path or 'user' in request.path %} current-app{% endif %}">
+    <table>
+      <caption>
+        <a href="#" class="section" title="{% blocktranslate with name=app.name %}Models in the User Administration application{% endblocktranslate %}">User Administration</a>
+      </caption>
+      <!-- User -->
+      {% for app in app_list %}
+        {% if app.name == "User" %}
+          {% for model in app.models %}
+            <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
+              {% if model.admin_url %}
+                <th scope="row"><a href="{{ model.admin_url }}"{% if model.admin_url in request.path %} aria-current="page"{% endif %}>{{ model.name }}</a></th>
+              {% else %}
+                <th scope="row">{{ model.name }}</th>
+              {% endif %}
+
+              {% if model.add_url %}
+                <td><a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+
+              {% if model.admin_url and show_changelinks %}
+                {% if model.view_only %}
+                  <td><a href="{{ model.admin_url }}" class="viewlink">{% translate 'View' %}</a></td>
+                {% else %}
+                  <td><a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a></td>
+                {% endif %}
+              {% elif show_changelinks %}
+                <td></td>
+              {% endif %}
+            </tr>        
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+
+      <!-- Groups -->
+      {% for app in app_list %}
+        {% if app.name == "Authentication and Authorization" %}
+          {% for model in app.models %}
+            <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
+              {% if model.admin_url %}
+                <th scope="row"><a href="{{ model.admin_url }}"{% if model.admin_url in request.path %} aria-current="page"{% endif %}>{{ model.name }}</a></th>
+              {% else %}
+                <th scope="row">{{ model.name }}</th>
+              {% endif %}
+
+              {% if model.add_url %}
+                <td><a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+
+              {% if model.admin_url and show_changelinks %}
+                {% if model.view_only %}
+                  <td><a href="{{ model.admin_url }}" class="viewlink">{% translate 'View' %}</a></td>
+                {% else %}
+                  <td><a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a></td>
+                {% endif %}
+              {% elif show_changelinks %}
+                <td></td>
+              {% endif %}
+            </tr>        
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+
+      <!-- Tokens -->
+      {% for app in app_list %}
+        {% if app.name == "Auth Token" %}
+          {% for model in app.models %}
+            <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
+              {% if model.admin_url %}
+                <th scope="row"><a href="{{ model.admin_url }}"{% if model.admin_url in request.path %} aria-current="page"{% endif %}>{{ model.name }}</a></th>
+              {% else %}
+                <th scope="row">{{ model.name }}</th>
+              {% endif %}
+
+              {% if model.add_url %}
+                <td><a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+
+              {% if model.admin_url and show_changelinks %}
+                {% if model.view_only %}
+                  <td><a href="{{ model.admin_url }}" class="viewlink">{% translate 'View' %}</a></td>
+                {% else %}
+                  <td><a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a></td>
+                {% endif %}
+              {% elif show_changelinks %}
+                <td></td>
+              {% endif %}
+            </tr>        
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Zoho -->
+  <div class="app-zoho module {% if 'zoho' in request.path %} current-app{% endif %}">
+    <table>
+      <caption>
+        <a href="#" class="section" title="{% blocktranslate with name=app.name %}Models in the Zoho application{% endblocktranslate %}">Zoho</a>
+      </caption>
+      {% for app in app_list %}
+        {% if app.name == "Zoho" %}
+          {% for model in app.models %}
+            <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
+              {% if model.admin_url %}
+                <th scope="row"><a href="{{ model.admin_url }}"{% if model.admin_url in request.path %} aria-current="page"{% endif %}>{{ model.name }}</a></th>
+              {% else %}
+                <th scope="row">{{ model.name }}</th>
+              {% endif %}
+
+              {% if model.add_url %}
+                <td><a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+
+              {% if model.admin_url and show_changelinks %}
+                {% if model.view_only %}
+                  <td><a href="{{ model.admin_url }}" class="viewlink">{% translate 'View' %}</a></td>
+                {% else %}
+                  <td><a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a></td>
+                {% endif %}
+              {% elif show_changelinks %}
+                <td></td>
+              {% endif %}
+            </tr>        
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Rest -->
+  {% for app in app_list %}
+    {% if app.name != "Auth Token" and app.name != "Authentication and Authorization" and app.name != "User" and app.name != "Accounts"  and app.name != "Social Accounts"  and app.name != "Zoho"  %}
+      <div class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}">
+        <table>
+          <caption>
+            <a href="{{ app.app_url }}" class="section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">{{ app.name }}</a>
+          </caption>
+          {% for model in app.models %}
+            <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
+              {% if model.admin_url %}
+                <th scope="row"><a href="{{ model.admin_url }}"{% if model.admin_url in request.path %} aria-current="page"{% endif %}>{{ model.name }}</a></th>
+              {% else %}
+                <th scope="row">{{ model.name }}</th>
+              {% endif %}
+
+              {% if model.add_url %}
+                <td><a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+
+              {% if model.admin_url and show_changelinks %}
+                {% if model.view_only %}
+                  <td><a href="{{ model.admin_url }}" class="viewlink">{% translate 'View' %}</a></td>
+                {% else %}
+                  <td><a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a></td>
+                {% endif %}
+              {% elif show_changelinks %}
+                <td></td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
+{% endif %}

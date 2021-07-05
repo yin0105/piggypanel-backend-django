@@ -13,7 +13,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from django.conf.urls import url
@@ -22,6 +21,8 @@ from .views import CustomObtainAuthToken
 from allauth.account.views import ConfirmEmailView,PasswordResetView
 from rest_auth.registration.views import VerifyEmailView
 from rest_framework import routers
+import superadmin
+import admin
 
 from chat import views
 
@@ -30,7 +31,8 @@ router.register(r'chats', views.ChatViewSet, basename='Chat')
 router.register(r'users', views.UserViewSet, basename='User')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),    
+    path('superadmin/', superadmin.site.urls),
     url(r'^rest-auth/', include('rest_auth.urls')),
     url(r'^rest-auth/authenticate/$', CustomObtainAuthToken.as_view()),
     path('api/leads/', include('leads.urls')),
