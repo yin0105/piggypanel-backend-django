@@ -148,7 +148,7 @@ class UserViewSet(ModelViewSet):
         queryset = models.GroupMessagePermission.objects.select_related("sender_group").filter(Q(sender_group_id=user_group[0]), Q(enabled=True))
         receiver_group_list = [row.receiver_group_id for row in queryset]
 
-        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=receiver_group_list), ~Q(id=user.id))
+        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=receiver_group_list), ~Q(id=user.id))        
         serializer = self.get_serializer(queryset, many=True)
         receiver_user_list = serializer.data
 
@@ -157,7 +157,8 @@ class UserViewSet(ModelViewSet):
 
         # Get Sender Group (Receiver Group including user)
         queryset = models.GroupMessagePermission.objects.select_related("receiver_group").filter(Q(receiver_group_id=user_group[0]), Q(enabled=True))
-        sender_group_list = [row.sender_group_id for row in queryset if not row.sender_group_id in receiver_group_list]
+        # sender_group_list = [row.sender_group_id for row in queryset if not row.sender_group_id in receiver_group_list]
+        sender_group_list = [row.sender_group_id for row in queryset]
         
         queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=sender_group_list), ~Q(id=user.id))
         serializer = self.get_serializer(queryset, many=True)
@@ -171,9 +172,32 @@ class UserViewSet(ModelViewSet):
             data.append(OrderedDict([("id", group_name), ("username", group_name), ("last_login", ""), ("unread", 0), ("status", "on"), ("transmissible", True)]))
         
         for row in receiver_user_list:
-            data.append(row)
+            if "chat" in request.GET:
+                try:
+                    msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=user.id) & Q(chat__receivers__contains="_" + str(row["id"]) + "_") | Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))
+                    if msgs:
+                        data.append(row)
+                except:
+                    pass
+            else:
+                print("== receiver : ", row)
+                data.append(row)
         for row in sender_user_list:
-            data.append(row)
+            if "chat" in request.GET:
+                try:
+                    msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))
+                    if not msgs:
+                        continue
+                        print(" == sender == ")
+                        data.append(row)
+                except:
+                    continue
+            for elem in data:
+                if elem["id"] == row["id"]:
+                    break
+            else:
+                print("== sender : ", row)
+                data.append(row)
 
         return Response(data)
 
