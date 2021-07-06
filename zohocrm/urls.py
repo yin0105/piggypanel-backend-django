@@ -40,6 +40,7 @@ urlpatterns = [
     path('create-chat/', views.createChat, name='create'),
     path('get-messages/', views.getMessages, name='get_messages'),
     path('unread/', views.getUnread, name='get_unread'),
+    path('remove_msg/', views.removeMsg, name='removeMsg'),
     path('', views.IndexView.as_view(), name='home'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + router.urls

@@ -21,6 +21,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import Group
 from django.forms.models import model_to_dict
 from collections import OrderedDict
+from django.shortcuts import redirect
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -91,6 +92,22 @@ def getMessages(request):
     messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver)) & Q(chat__receivers__contains="_{}_".format(sender))) | Q(Q(chat__receivers__startswith="_{}_".format(sender)) & Q(chat__receivers__contains="_{}_".format(receiver))) ).order_by('date_sent')]
 
     return JsonResponse(data={"messages": messages})
+
+
+@api_view(['POST'])
+def removeMsg(request):
+    id = request.GET.get("id")
+    msg = models.Message.objects.get(id=id)
+    sender_id = msg.sender_id
+    models.Message.objects.filter(id=id).delete()
+    return JsonResponse(data={"data": "ok"})
+    # return redirect("/users/?user=" + str(msg.sender_id))
+    # data = request.GET
+    # sender = int(data['sender'])
+    # receiver = int(data['receiver'])
+    # messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver)) & Q(chat__receivers__contains="_{}_".format(sender))) | Q(Q(chat__receivers__startswith="_{}_".format(sender)) & Q(chat__receivers__contains="_{}_".format(receiver))) ).order_by('date_sent')]
+
+    # return JsonResponse(data={"messages": messages})
 
 
 def getUnread(request):
@@ -180,23 +197,19 @@ class UserViewSet(ModelViewSet):
                 except:
                     pass
             else:
-                print("== receiver : ", row)
                 data.append(row)
         for row in sender_user_list:
             if "chat" in request.GET:
                 try:
-                    msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))
+                    msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=user.id) & Q(chat__receivers__contains="_" + str(row["id"]) + "_") | Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))
                     if not msgs:
                         continue
-                        print(" == sender == ")
-                        data.append(row)
                 except:
                     continue
             for elem in data:
                 if elem["id"] == row["id"]:
                     break
             else:
-                print("== sender : ", row)
                 data.append(row)
 
         return Response(data)
