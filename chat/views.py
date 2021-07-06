@@ -101,13 +101,6 @@ def removeMsg(request):
     sender_id = msg.sender_id
     models.Message.objects.filter(id=id).delete()
     return JsonResponse(data={"data": "ok"})
-    # return redirect("/users/?user=" + str(msg.sender_id))
-    # data = request.GET
-    # sender = int(data['sender'])
-    # receiver = int(data['receiver'])
-    # messages = [serializers.MessageSerializer(msg).data for msg in models.Message.objects.select_related('chat').filter(Q(Q(chat__receivers__startswith="_{}_".format(receiver)) & Q(chat__receivers__contains="_{}_".format(sender))) | Q(Q(chat__receivers__startswith="_{}_".format(sender)) & Q(chat__receivers__contains="_{}_".format(receiver))) ).order_by('date_sent')]
-
-    # return JsonResponse(data={"messages": messages})
 
 
 def getUnread(request):
