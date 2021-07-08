@@ -134,9 +134,11 @@ def convert(seconds):
 
 def stats_week_1():
     try:
-        vWCdate  = date.today() - timedelta(days=datetime.today().weekday() % 7 )
+        now_ = datetime.now()
+        to = now_ - timedelta(hours=now_.hour, minutes=now_.minute, seconds=now_.second)
+        vWCdate  = to- timedelta(days=date.today().weekday() % 7 )
         vWCdate = londonTimeConvert(vWCdate)
-        expData = vWCdate + timedelta(days=7)
+        expData = to + timedelta(days=7, seconds=-1)
         startDay = wbcdr.objects.filter(calldate__gte=vWCdate.date(),calldate__lte=expData.date(),process_field=0).values('cnum').annotate(Sum('duration'),Sum('billsec'),total=Count('cnum'))
         for i in startDay:
             print(i,"111111111111111")
