@@ -83,7 +83,7 @@ def extensions_sync():
                 wbcdrInfo = wbcdr.objects.aggregate(Max('calldate'))
                 callDate = wbcdrInfo["calldate__max"]
                 # cursor.execute("select * from cdr where calldate > %s",[callDate])
-                cursor.execute("select * from cdr where calldate > %s and dcontext = %s and lastapp = %s",[callDate,"from-internal","Dial"])
+                cursor.execute("select * from cdr where calldate >= %s and dcontext = %s and lastapp = %s",[callDate,"from-internal","Dial"])
                 x = cursor.fetchall()
                 if len(x) > 0:
                     for i in x:

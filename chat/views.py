@@ -158,7 +158,7 @@ class UserViewSet(ModelViewSet):
         queryset = models.GroupMessagePermission.objects.select_related("sender_group").filter(Q(sender_group_id=user_group[0]), Q(enabled=True))
         receiver_group_list = [row.receiver_group_id for row in queryset]
 
-        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=receiver_group_list), ~Q(id=user.id))        
+        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=receiver_group_list), ~Q(id=user.id), Q(is_active=True))        
         serializer = self.get_serializer(queryset, many=True)
         receiver_user_list = serializer.data
 
@@ -170,7 +170,7 @@ class UserViewSet(ModelViewSet):
         # sender_group_list = [row.sender_group_id for row in queryset if not row.sender_group_id in receiver_group_list]
         sender_group_list = [row.sender_group_id for row in queryset]
         
-        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=sender_group_list), ~Q(id=user.id))
+        queryset = User.objects.select_related("auth_token").filter(Q(groups__id__in=sender_group_list), ~Q(id=user.id), Q(is_active=True))
         serializer = self.get_serializer(queryset, many=True)
         sender_user_list = serializer.data
 
@@ -188,12 +188,12 @@ class UserViewSet(ModelViewSet):
 
                     if not msgs:
                         continue
-                    else:
-                        try:
-                            user_status = models.UserStatus.objects.get(user=row["id"])
-                            if user_status.status != "on": continue
-                        except:
-                            continue
+                    # else:
+                    #     try:
+                    #         user_status = models.UserStatus.objects.get(user=row["id"])
+                    #         if user_status.status != "on": continue
+                    #     except:
+                    #         continue
                 except:
                     continue
 
@@ -205,12 +205,12 @@ class UserViewSet(ModelViewSet):
                     msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=user.id) & Q(chat__receivers__contains="_" + str(row["id"]) + "_") | Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))                    
                     if not msgs:
                         continue
-                    else:
-                        try:
-                            user_status = models.UserStatus.objects.get(user=row["id"])
-                            if user_status.status != "on": continue
-                        except:
-                            continue
+                    # else:
+                    #     try:
+                    #         user_status = models.UserStatus.objects.get(user=row["id"])
+                    #         if user_status.status != "on": continue
+                    #     except:
+                    #         continue
                 except:
                     continue
 
