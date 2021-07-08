@@ -3,7 +3,7 @@ from .models import *
 from zoho.models import ZohoContactsSyncSettings, ZohoSyncErrorLogs
 import time
 import datetime
-from datetime import datetime, timezone, date,timedelta
+from datetime import datetime, timezone, date, timedelta
 import zcrmsdk
 import pymysql
 from django.views.decorators.csrf import csrf_exempt
@@ -134,15 +134,13 @@ def convert(seconds):
 
 def stats_week_1():
     try:
-        vWCdate  = datetime.now() - timedelta(days=datetime.today().weekday() % 7 )
+        vWCdate  = date.today() - timedelta(days=datetime.today().weekday() % 7 )
         vWCdate = londonTimeConvert(vWCdate)
-        expData = vWCdate + timedelta(days=6)
-        print(expData,"=======",vWCdate.date())
+        expData = vWCdate + timedelta(days=7)
         startDay = wbcdr.objects.filter(calldate__gte=vWCdate.date(),calldate__lte=expData.date(),process_field=0).values('cnum').annotate(Sum('duration'),Sum('billsec'),total=Count('cnum'))
         for i in startDay:
             print(i,"111111111111111")
             weekCheck = stats_week.objects.filter(wcdate=vWCdate.date(),extension=i["cnum"])
-            # print(weekCheck,"11111111111111111222222222222222222222222")
             if weekCheck.exists():
                 update = 1
                 print("already there")

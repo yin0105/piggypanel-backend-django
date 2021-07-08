@@ -216,7 +216,7 @@ configuration_dictionary = {
     'apiVersion': 'v2',
     'currentUserEmail': config('ZOHO_CURRENT_USER_EMAIL',default='info@bvm.legal'),
     'sandbox': 'False',
-    'applicationLogFilePath': os.path.join(BASE_DIR, "Log"),
+    'applicationLogFilePath': "",
     'client_id': config('ZOHO_CLIENT_ID',default='1000.76FKQGMEUQQZWQ13B40XKWQ6PK6I2E'),
     'client_secret': config('ZOHO_CLIENT_SECRET',default='5b86037185d63faff832e73a10412bab23303e4999'),
     'redirect_uri': config('ZOHO_REDIRECT_URI',default='http://localhost:7000/'),
