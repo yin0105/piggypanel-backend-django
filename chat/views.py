@@ -179,26 +179,40 @@ class UserViewSet(ModelViewSet):
         data = []
         for row in queryset:
             group_name = "@" + row.name
-            data.append(OrderedDict([("id", group_name), ("username", group_name), ("last_login", ""), ("unread", 0), ("status", "on"), ("transmissible", True)]))
+            data.append(OrderedDict([("id", group_name), ("first_name", group_name), ("last_name", ""),  ("last_login", ""), ("unread", 0), ("status", "on"), ("transmissible", True)]))
         
         for row in receiver_user_list:
             if "chat" in request.GET:
                 try:
                     msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=user.id) & Q(chat__receivers__contains="_" + str(row["id"]) + "_") | Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))
-                    if msgs:
-                        data.append(row)
-                except:
-                    pass
-            else:
-                data.append(row)
-        for row in sender_user_list:
-            if "chat" in request.GET:
-                try:
-                    msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=user.id) & Q(chat__receivers__contains="_" + str(row["id"]) + "_") | Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))
+
                     if not msgs:
                         continue
                 except:
                     continue
+                
+            try:
+                user_status = models.UserStatus.objects.get(user=row["id"])
+                if user_status.status != "on": continue
+            except:
+                continue
+
+            data.append(row)
+        for row in sender_user_list:
+            if "chat" in request.GET:
+                try:
+                    msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=user.id) & Q(chat__receivers__contains="_" + str(row["id"]) + "_") | Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))                    
+                    if not msgs:
+                        continue
+                except:
+                    continue
+
+            try:
+                user_status = models.UserStatus.objects.get(user=row["id"])
+                if user_status.status != "on": continue
+            except:
+                continue
+
             for elem in data:
                 if elem["id"] == row["id"]:
                     break

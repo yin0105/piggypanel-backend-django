@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 import superadmin
 
 def importleadsfields_admin(request):
+    print("=" * 100)
+    print("importleadsfields_admin")
     try:
         module_ins = zcrmsdk.ZCRMModule.get_instance('Leads')# Module API Name
         resp = module_ins.get_all_fields()
@@ -77,6 +79,7 @@ def importleadsfields_admin(request):
             leads_fields.objects.update_or_create(field_zoho_ref=field_ins.id, defaults=defaults)
             # print("\n\n")
     except zcrmsdk.ZCRMException as ex:
+        print("=*" * 100)
         ZohoSyncErrorLogs.objects.create(module_type='Leads Fields Sync', added_on=datetime.now(timezone.utc), error_code=ex.error_code, error_message=ex.error_message,error_details=ex.error_details,error_content=ex.error_content)
     
     return HttpResponse('Admin Custom View')
@@ -261,7 +264,7 @@ class ZohoImportLeadsFieldsModelAdmin(admin.ModelAdmin):
             path('importleadsfields', self.admin_site.admin_view(importleadsfields_admin), name=view_name),
         ]
 
-superadmin.site.register(ZohoImportLeadsFieldsModel, ZohoImportLeadsFieldsModelAdmin)
+admin.site.register(ZohoImportLeadsFieldsModel, ZohoImportLeadsFieldsModelAdmin)
 
 class ZohoImportLeadsAdmin(admin.ModelAdmin):
     model = ZohoImportLeadsModel
@@ -273,7 +276,7 @@ class ZohoImportLeadsAdmin(admin.ModelAdmin):
             path('importleads', self.admin_site.admin_view(importleads_admin), name=view_name),
         ]
 
-superadmin.site.register(ZohoImportLeadsModel, ZohoImportLeadsAdmin)
+admin.site.register(ZohoImportLeadsModel, ZohoImportLeadsAdmin)
 
 class ZohoImportContactsFieldsModelAdmin(admin.ModelAdmin):
     model = ZohoImportContactsFieldsModel
@@ -285,7 +288,7 @@ class ZohoImportContactsFieldsModelAdmin(admin.ModelAdmin):
             path('importcontactsfields', self.admin_site.admin_view(importcontactsfields_admin), name=view_name),
         ]
 
-# admin.site.register(ZohoImportContactsFieldsModel, ZohoImportContactsFieldsModelAdmin)
+admin.site.register(ZohoImportContactsFieldsModel, ZohoImportContactsFieldsModelAdmin)
 
 class ZohoImportContactsAdmin(admin.ModelAdmin):
     model = ZohoImportContactsModel
@@ -297,7 +300,7 @@ class ZohoImportContactsAdmin(admin.ModelAdmin):
             path('importcontacts', self.admin_site.admin_view(importcontacts_admin), name=view_name),
         ]
 
-# admin.site.register(ZohoImportContactsModel, ZohoImportContactsAdmin)
+admin.site.register(ZohoImportContactsModel, ZohoImportContactsAdmin)
 
 class ZohoLeadsSyncSettingsAdmin(admin.ModelAdmin):
     actions = None

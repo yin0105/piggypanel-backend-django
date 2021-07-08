@@ -1,10 +1,10 @@
 {% load i18n %}
 
 {% if app_list %}
-  <div class="app-user-admin module {% if 'authtoken' in request.path or 'auth' in request.path or 'user' in request.path %} current-app{% endif %}">
+  <div class="app-user-admin module {% if 'authtoken' in request.path or 'auth' in request.path or 'user' in request.path %} current-app{% endif %}">    
     <table>
       <caption>
-        <a href="#" class="section" title="{% blocktranslate with name=app.name %}Models in the User Administration application{% endblocktranslate %}">User Administration</a>
+        <a href="#" class="section" title="{% blocktranslate with name=app.name %}Models in the User Administration application{% endblocktranslate %}">User 222 Administration</a>
       </caption>
       {% for app in app_list %}
       {% if app.name == "user" %}

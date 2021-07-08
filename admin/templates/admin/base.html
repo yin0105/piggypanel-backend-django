@@ -1,4 +1,6 @@
-{% load i18n static %}<!DOCTYPE html>
+{% load i18n static %}
+{% load menu %}{% generate_menu %}
+<!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
 <head>
@@ -22,6 +24,13 @@
 
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"
   data-admin-utc-offset="{% now "Z" %}">
+  <h1>User Menu</h1>
+        {% with menu=menus.user %}{% include "admin/menu.html" %}{% endwith %}
+
+        <h1>Main Menu</h1>
+        {% with menu=menus.main %}{% include "admin/menu.html" %}{% endwith %}
+
+        <hr>
 
 <!-- Container -->
 <div id="container">
