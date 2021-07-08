@@ -188,30 +188,31 @@ class UserViewSet(ModelViewSet):
 
                     if not msgs:
                         continue
+                    else:
+                        try:
+                            user_status = models.UserStatus.objects.get(user=row["id"])
+                            if user_status.status != "on": continue
+                        except:
+                            continue
                 except:
                     continue
-                
-            try:
-                user_status = models.UserStatus.objects.get(user=row["id"])
-                if user_status.status != "on": continue
-            except:
-                continue
 
             data.append(row)
+
         for row in sender_user_list:
             if "chat" in request.GET:
                 try:
                     msgs = models.Message.objects.select_related("chat").filter(Q(sender_id=user.id) & Q(chat__receivers__contains="_" + str(row["id"]) + "_") | Q(sender_id=row["id"]), Q(chat__receivers__contains="_" + str(user.id) + "_"))                    
                     if not msgs:
                         continue
+                    else:
+                        try:
+                            user_status = models.UserStatus.objects.get(user=row["id"])
+                            if user_status.status != "on": continue
+                        except:
+                            continue
                 except:
                     continue
-
-            try:
-                user_status = models.UserStatus.objects.get(user=row["id"])
-                if user_status.status != "on": continue
-            except:
-                continue
 
             for elem in data:
                 if elem["id"] == row["id"]:
